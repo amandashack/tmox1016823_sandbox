@@ -34,12 +34,11 @@ for r in runnums:
     run = next(ds.runs())
     runkey = run.runnum
 
-    port.update({runkey: {}})
+    piranhas.update({runkey: {}})
     hsds.update({runkey: {}})
     chankeys.update({runkey: {}})
     detslist.update({runkey: [s for s in run.detnames]})
 
-    print(port)
     print(chankeys)
     print(hsds)
     print(detslist)
@@ -88,8 +87,7 @@ for r in runnums:
     for piranhaname in piranhanames[runkey]:
         print(piranhaname)
         if runpiranha: # this is redundant since piranhanames was made based off of detslist and piranhaname in detslist[runkey]:
-            piranhas.update({piranhaname: run.Detector(piranhaname)})
-
+            piranhas[runkey][piranhaname] = {'detector': run.Detector(piranhaname), 'cls': Atm(400)}
         print(piranhas)
 
     eventnum: int = 0
@@ -97,7 +95,8 @@ for r in runnums:
         completeEvent: List[bool] = [True]
         if eventnum % 10 == 0: print(eventnum)
         # run tests
-        for i, detector in enumerate(piranhanames[runkey]):
-            if (detector != None):
-                print("you made it here")
-                #if (hsds[runkey][piranhaname].raw.raw(evt) != None):
+        for i, pnames in enumerate(piranhas[runkey]):
+            if (piranhas[runkey][pnames]['detector'] != None):
+                if (piranhas[runkey][pnames]['detector'].raw.raw(evt) != None):
+                    completeEvent += [piranhas[runkey][pnames]['cls'].test(piranhas[runkey][pnames]['detector'].raw.raw(evt)[0])]
+                    print(completeEvent)
