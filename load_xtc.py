@@ -157,21 +157,28 @@ class xtc_set:
 
     def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0):
         ds = ps.DataSource(exp=self.experiment, run=self.run, update=10000)
-        # update = update
-        #self.pmt_roi = pmt_roi
         self.electron_roi = electron_roi
-
         self.fix_waveform_baseline = fix_waveform_baseline
         _fzp, _step_arr, _xgmd, _gmd = [], [], [], []
-        waveform_arr, = []
+        waveform_arr = []
         Nfound = 0
 
         for run in ds.runs():
-            if 'mrco_hsd' in run.detnames: self.hsd_flag = True  # find if there is hsd data to parse
-            gmd = run.Detector("gmd")
-            xgmd = run.Detector("xgmd")
+            det_names = [name for name in run.detnames]
+            if 'mrco_hsd' in det_names: self.hsd_flag = True  # find if there is hsd data to parse
+            if 'gmd' in det_names:
+                gmd = run.Detector("gmd")
+            else:
+                gmd = None
+            if 'xgmd' in det_names:
+                xgmd = run.Detector("xgmd")
+            else:
+                xgmd = None
             # sp1k4 = run.Detector("sp1k4")
-            fzp = run.Detector("tmo_fzppiranha")
+            if "tmo_fzppiranha" in det_names:
+                fzp = run.Detector("tmo_fzppiranha")
+            else:
+                fzp=None
 
             if self.hsd_flag:
                 hsd = run.Detector('mrco_hsd')
@@ -179,14 +186,16 @@ class xtc_set:
             for nevent, event in enumerate(run.events()):
                 if self.no_shots and nevent == self.no_shots: break  # kill loop after desired number of shots
                 # if nevent % update == 0: print("Event number: %d, Valid shots: %d" % (nevent, Nfound))
-
-                gmd_energy = gmd.raw.milliJoulesPerPulse(event)
-                xgmd_energy = xgmd.raw.milliJoulesPerPulse(event)
+                if gmd:
+                    gmd_energy = gmd.raw.milliJoulesPerPulse(event)
+                    _gmd.append(gmd_energy)
+                if xgmd:
+                    xgmd_energy = xgmd.raw.milliJoulesPerPulse(event)
+                    _xgmd.append(xgmd_energy)
                 # sp1k4 = sp1k4.raw.value(event)
-                fzp_im = fzp.raw.raw(event)
-                _gmd.append(gmd_energy)
-                _xgmd.append(xgmd_energy)
-                _fzp.append(fzp_im)
+                if fzp:
+                    fzp_im = fzp.raw.raw(event)
+                    _fzp.append(fzp_im)
 
                 if self.hsd_flag:
                     hsd_waveforms = hsd.raw.waveforms(event)
