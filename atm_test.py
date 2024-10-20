@@ -35,6 +35,7 @@ for r in runnums:
     runkey = run.runnum
 
     piranhas.update({runkey: {}})
+    port.update({runkey: {}})
     hsds.update({runkey: {}})
     chankeys.update({runkey: {}})
     detslist.update({runkey: [s for s in run.detnames]})
