@@ -198,7 +198,8 @@ class xtc_set:
                     _fzp.append(fzp_im)
 
                 if self.hsd_flag:
-                    hsd_waveforms = hsd.raw.waveforms(event)
+                    #hsd_waveforms = hsd.raw.waveforms(event)
+                    hsd_waveforms = hsd.raw.padded(event)
                     if nevent == 0:
                         self.time_px = 1e6 * hsd_waveforms[port_num]['times'].astype('float')
                         electron_roi_index = find_indices(self.time_px, self.electron_roi)
