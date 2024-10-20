@@ -155,7 +155,7 @@ class xtc_set:
         self.scan = scan
         self.hsd_flag = False
 
-    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, plot=False):
+    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, plot=False, downsample=3):
         ds = ps.DataSource(exp=self.experiment, run=self.run)
         self.electron_roi = electron_roi
         self.fix_waveform_baseline = fix_waveform_baseline
