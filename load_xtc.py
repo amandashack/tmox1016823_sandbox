@@ -211,16 +211,16 @@ class xtc_set:
                     else:
                         if nevent == 0:
                             self.time_px = 1e6 * hsd_waveforms[port_num]['times'].astype('float')
-                            electron_roi_index = find_indices(self.time_px, self.electron_roi)
+                            #electron_roi_index = find_indices(self.time_px, self.electron_roi)
 
                         if self.fix_waveform_baseline:
                             tof_waveform = fix_wf_baseline(hsd_waveforms[port_num][0].astype('float'))[
-                                                  electron_roi_index[0]:electron_roi_index[1]]
+                                                  self.electron_roi[0]:self.electron_roi[1]]
 
                         else:
-                            tof_waveform = hsd_waveforms[port_num][0].astype('float')[electron_roi_index[0]:electron_roi_index[1]]
+                            tof_waveform = hsd_waveforms[port_num][0].astype('float')[self.electron_roi[0]:self.electron_roi[1]]
                             if plot:
-                                print(f"Plotting! Remember, there will be {self.max_shots} plots created based on input to max_shots")
+                                print(f"Plotting! Remember, there will be {self.no_shots} plots created based on input to max_shots")
                                 fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
                                 ax.plot(hsd_waveforms[port_num][0], label='Full Electron Spectra', lw=2, c='maroon')
                                 ax.set(xlabel='TOF (μs)', yticks=[])
@@ -251,7 +251,7 @@ class xtc_set:
         if self.hsd_flag:
             # times in us
             print("Make the waveform please!")
-            self.time_px = self.time_px[electron_roi_index[0]:electron_roi_index[1]]
+            self.time_px = self.time_px[self.electron_roi[0]:self.electron_roi[1]]
             self._waveform = np.array(waveform_arr)
 
     """def scan_run(self):
@@ -383,7 +383,7 @@ if __name__ == "__main__":
     expt = 'tmox1016823'
     run = 6
 
-    run5 = xtc_set(run=run, experiment=expt, max_shots=200)
+    run5 = xtc_set(run=run, experiment=expt, max_shots=5, plot=True)
     run5.load_xtc(electron_roi=(4300, 20000), fix_waveform_baseline=False)
     print("purge bad data -- might not need this anymore")
     run5.purge_bad_data()
