@@ -44,7 +44,7 @@ if __name__ == "__main__":
     #ports = [202, 247, 292, 270, 135, 180, 315, 90, 22, 225, 67, 45, 112, 157, 0, 337]
     ports = [0, 90, 180, 270]
 
-    run6 = xtc_set(run=run, experiment=expt, max_shots=fetch_shots)
+    run6 = xtc_set(run=run, experiment=expt, max_shots=fetch_shots, scan=True)
 
     # Initialize a list to hold the averaged waveforms for each port
     averaged_waveforms_per_port = []
@@ -64,8 +64,8 @@ if __name__ == "__main__":
         # Create a DataArray for waveforms with coordinates
         wf_da = xr.DataArray(
             waveforms,
-            coords={'tof': tof_axis, 'shot': np.arange(waveforms.shape[1])},
-            dims=['tof', 'shot']
+            coords={'shot': np.arange(waveforms.shape[1]), 'tof': tof_axis},
+            dims=['shot', 'tof']
         )
         # Add scan variable as a coordinate
         wf_da = wf_da.assign_coords(scan_var=('shot', scan_vars))
