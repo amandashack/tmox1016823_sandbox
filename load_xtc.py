@@ -155,7 +155,7 @@ class xtc_set:
         self.scan = scan
         self.hsd_flag = False
 
-    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0):
+    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, plot=False):
         ds = ps.DataSource(exp=self.experiment, run=self.run)
         self.electron_roi = electron_roi
         self.fix_waveform_baseline = fix_waveform_baseline
@@ -218,20 +218,21 @@ class xtc_set:
                                                   electron_roi_index[0]:electron_roi_index[1]]
 
                         else:
-                            print("Lets try to plot: ", hsd_waveforms[port_num][0].tolist())
                             tof_waveform = hsd_waveforms[port_num][0].astype('float')[electron_roi_index[0]:electron_roi_index[1]]
-                            fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
-                            ax.plot(self.time_px, hsd_waveforms[port_num][0], label='Ion spectra', lw=2, c='maroon')
-                            ax.set(xlabel='TOF (μs)', yticks=[])
-                            axt = ax.twinx()
-                            axt.plot(self.time_px[electron_roi_index[0]:electron_roi_index[1]],
-                                     tof_waveform, label='Electron spectra', c='dodgerblue', lw=2)
-                            axt.set(yticks=[])
+                            if plot:
+                                print(f"Plotting! Remember, there will be {self.max_shots} plots created based on input to max_shots")
+                                fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
+                                ax.plot(hsd_waveforms[port_num][0], label='Full Electron Spectra', lw=2, c='maroon')
+                                ax.set(xlabel='TOF (μs)', yticks=[])
+                                axt = ax.twinx()
+                                axt.plot(tof_waveform, label='Cropped Electron spectra', c='dodgerblue', lw=2)
+                                axt.set(yticks=[])
 
-                            lines1, labels1 = ax.get_legend_handles_labels()
-                            lines2, labels2 = axt.get_legend_handles_labels()
+                                lines1, labels1 = ax.get_legend_handles_labels()
+                                lines2, labels2 = axt.get_legend_handles_labels()
 
-                            axt.legend(lines1 + lines2, labels1 + labels2, facecolor='white', framealpha=1, fontsize=10)
+                                axt.legend(lines1 + lines2, labels1 + labels2, facecolor='white', framealpha=1, fontsize=10)
+                                plt.show()
 
                     waveform_arr.append(tof_waveform)
                 if self.scan:
@@ -394,7 +395,7 @@ if __name__ == "__main__":
     #        run5.no_shots, -1, 4).mean(2)
     #    run5.time_px = run5.time_px[:-(len(run5.time_px) % 4)].reshape(-1, 4).mean(1)
     fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
-    ax.plot(run5.time_px, run5._waveform.mean(0), label='Ion spectra', lw=2, c='maroon')
+    ax.plot(run5.time_px, run5._waveform[0], label='Ion spectra', lw=2, c='maroon')
     ax.set(xlabel='TOF (μs)', yticks=[])
     plt.legend("mean TOF")
     plt.show()
