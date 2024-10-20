@@ -8,7 +8,7 @@ import socket
 
 from typing import Type, List
 
-from Fzp import *
+from atm import *
 
 print("Hello from Fzp_test.py")
 
@@ -93,13 +93,11 @@ for r in runnums:
         print(piranhas)
 
     eventnum: int = 0
-
-
     for evt in run.events():
         completeEvent: List[bool] = [True]
         if eventnum % 10 == 0: print(eventnum)
         # run tests
-        for i, piranhaname in enumerate(piranhanames[runkey].keys()):
-            if (type(piranhanames[runkey][piranhaname]) != None):
+        for i, detector in enumerate(piranhanames[runkey]):
+            if (detector != None):
                 print("you made it here")
                 #if (hsds[runkey][piranhaname].raw.raw(evt) != None):
