@@ -98,6 +98,6 @@ for r in runnums:
         # run tests
         for i, pnames in enumerate(piranhas[runkey]):
             if (piranhas[runkey][pnames]['detector'] != None):
-                if (piranhas[runkey][pnames]['detector'].raw.raw(evt) != None):
-                    completeEvent += [piranhas[runkey][pnames]['cls'].test(piranhas[runkey][pnames]['detector'].raw.raw(evt)[0])]
+                if (piranhas[runkey][pnames]['detector'].raw.raw(evt)[0] != None):
+                    completeEvent += [piranhas[runkey][pnames]['cls'].test(piranhas[runkey][pnames]['detector'].raw.raw(evt))]
                     print(completeEvent)

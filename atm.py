@@ -73,7 +73,7 @@ class Atm:
             return False
         else:
             if (np.max(atmwv)-mean)<self.atmthresh:
-                #print('weak atm!')
+                print('weak atm!')
                 return False
         return True
 
