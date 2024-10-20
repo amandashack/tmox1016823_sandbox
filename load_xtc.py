@@ -155,7 +155,7 @@ class xtc_set:
         self.scan = scan
         self.hsd_flag = False
 
-    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, hv_scan=True):
+    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0):
         ds = ps.DataSource(exp=self.experiment, run=self.run)
         self.electron_roi = electron_roi
         self.fix_waveform_baseline = fix_waveform_baseline
@@ -180,7 +180,7 @@ class xtc_set:
                 fzp = run.Detector("tmo_fzppiranha")
             else:
                 fzp=None
-            if hv_scan:
+            if scan:
                 sv_detector = run.Detector("hf_w")
 
             if self.hsd_flag:
@@ -215,11 +215,12 @@ class xtc_set:
                         tof_waveform = hsd_waveforms[port_num][0].astype('float')[electron_roi_index[0]:electron_roi_index[1]]
 
                     waveform_arr.append(tof_waveform)
-                if hv_scan:
+                if scan:
                     sv = sv_detector(event)
                     scan_var.append(sv)
 
                 Nfound += 1
+            break
 
         self.fzp = np.array(_fzp)
         self.gmd = np.array(_gmd)
@@ -229,6 +230,7 @@ class xtc_set:
 
         if self.hsd_flag:
             # times in us
+            print("Make the waveform please!")
             self.time_px = self.time_px[electron_roi_index[0]:electron_roi_index[1]]
             self._waveform = np.array(waveform_arr)
 
@@ -342,22 +344,23 @@ if __name__ == "__main__":
     update = 100  # Update progress after how many shots?
 
     expt = 'tmox1016823'
-    run = 5
+    run = 6
 
-    run5 = xtc_set(run=5, experiment='tmox1016823', max_shots=200)
+    run5 = xtc_set(run=6, experiment='tmox1016823', max_shots=200)
     run5.load_xtc(electron_roi=(4300, 20000), fix_waveform_baseline=False)
-    #run5.purge_bad_data()
-    #if len(run5.time_px) % 4 == 0:
-    #    run5._waveform = run5._waveform.reshape(run5.no_shots, -1, 4).mean(2)
-    #    run5.time_px = run5.time_px.reshape(-1, 4).mean(1)
-    #else:
-    #    run5._waveform = run5._waveform[:, :-(len(run5.time_px) % 4)].reshape(
-    #        run5.no_shots, -1, 4).mean(2)
-    #    run5.time_px = run5.time_px[:-(len(run5.time_px) % 4)].reshape(-1, 4).mean(1)
-    print(len(run5._waveform))
-    #fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
-    #ax.plot(run5.time_px, run5._waveform.mean(0), label='Ion spectra', lw=2, c='maroon')
-    #ax.set(xlabel='TOF (μs)', yticks=[])
+    run5.purge_bad_data()
+    if len(run5.time_px) % 4 == 0:
+        run5._waveform = run5._waveform.reshape(run5.no_shots, -1, 4).mean(2)
+        run5.time_px = run5.time_px.reshape(-1, 4).mean(1)
+    else:
+        run5._waveform = run5._waveform[:, :-(len(run5.time_px) % 4)].reshape(
+            run5.no_shots, -1, 4).mean(2)
+        run5.time_px = run5.time_px[:-(len(run5.time_px) % 4)].reshape(-1, 4).mean(1)
+    fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
+    ax.plot(run5.time_px, run5._waveform.mean(0), label='Ion spectra', lw=2, c='maroon')
+    ax.set(xlabel='TOF (μs)', yticks=[])
+    plt.legend("mean TOF")
+    plt.show()
     #axt = ax.twinx()
     #axt.plot(run5.mbes_time_px, run5._waveform.mean(0), label='Electron spectra', c='dodgerblue', lw=2)
     #axt.set(yticks=[])
