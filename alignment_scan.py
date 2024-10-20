@@ -20,7 +20,6 @@ def plot_hv_scan(hv_scan_xar, verify_data=False, num_verify=2):
     for i, port in enumerate(ports):
         data = hv_scan_xar.sel(ports=port)
         ax = axes[i]
-        print(data.coords['scan_vars'].tolist(), data.coords['tof'].tolist(), data.tolist())
 
         # Transpose data to match the axes
         pcm = ax.pcolormesh(data.coords['scan_var'], data.coords['tof'], data.T, shading='auto')
@@ -63,6 +62,7 @@ def plot_hv_scan(hv_scan_xar, verify_data=False, num_verify=2):
 
 
 if __name__ == "__main__":
+    # if max value of fex window above 19000 count that as a hit
     fetch_shots = None  # Number of shots to load
     update = 100  # Update progress after how many shots?
 
@@ -123,5 +123,5 @@ if __name__ == "__main__":
         dims=['ports', 'scan_var', 'tof']
     )
 
-    # Call the plotting function with data verification enabled
-    plot_hv_scan(hv_scan_xar, verify_data=True, num_verify=2)
+    # Call the plotting function
+    plot_hv_scan(hv_scan_xar)
