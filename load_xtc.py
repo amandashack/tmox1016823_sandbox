@@ -155,12 +155,13 @@ class xtc_set:
         self.scan = scan
         self.hsd_flag = False
 
-    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0):
-        ds = ps.DataSource(exp=self.experiment, run=self.run, update=10000)
+    def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, hv_scan=True):
+        ds = ps.DataSource(exp=self.experiment, run=self.run)
         self.electron_roi = electron_roi
         self.fix_waveform_baseline = fix_waveform_baseline
         _fzp, _step_arr, _xgmd, _gmd = [], [], [], []
         waveform_arr = []
+        scan_var = []
         Nfound = 0
 
         for run in ds.runs():
@@ -179,6 +180,8 @@ class xtc_set:
                 fzp = run.Detector("tmo_fzppiranha")
             else:
                 fzp=None
+            if hv_scan:
+                sv_detector = run.Detector("hf_w")
 
             if self.hsd_flag:
                 hsd = run.Detector('mrco_hsd')
@@ -199,28 +202,29 @@ class xtc_set:
 
                 if self.hsd_flag:
                     #hsd_waveforms = hsd.raw.waveforms(event)
-                    hsd_waveforms = hsd.raw.padded(event)
+                    hsd_waveforms = (hsd.raw.padded(event))
                     if nevent == 0:
                         self.time_px = 1e6 * hsd_waveforms[port_num]['times'].astype('float')
                         electron_roi_index = find_indices(self.time_px, self.electron_roi)
 
-                    # channels 10, 11 and 12 are used
                     if self.fix_waveform_baseline:
                         tof_waveform = fix_wf_baseline(hsd_waveforms[port_num][0].astype('float'))[
                                               electron_roi_index[0]:electron_roi_index[1]]
 
                     else:
-                        tof_waveform = hsd_waveforms[port_num][0].astype('float')[
-                                              electron_roi_index[0]:electron_roi_index[1]]
+                        tof_waveform = hsd_waveforms[port_num][0].astype('float')[electron_roi_index[0]:electron_roi_index[1]]
 
                     waveform_arr.append(tof_waveform)
+                if hv_scan:
+                    sv = sv_detector(event)
+                    scan_var.append(sv)
 
                 Nfound += 1
 
         self.fzp = np.array(_fzp)
         self.gmd = np.array(_gmd)
         self.xgmd = np.array(_xgmd)
-        self.scan_var = np.array(_step_arr)
+        self.scan_var = np.array(scan_var)
         self.no_shots = Nfound
 
         if self.hsd_flag:
@@ -341,7 +345,7 @@ if __name__ == "__main__":
     run = 5
 
     run5 = xtc_set(run=5, experiment='tmox1016823', max_shots=200)
-    run5.load_xtc(electron_roi=(1.2, 2), fix_waveform_baseline=False)
+    run5.load_xtc(electron_roi=(4300, 20000), fix_waveform_baseline=False)
     #run5.purge_bad_data()
     #if len(run5.time_px) % 4 == 0:
     #    run5._waveform = run5._waveform.reshape(run5.no_shots, -1, 4).mean(2)
