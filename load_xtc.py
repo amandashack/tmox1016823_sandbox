@@ -383,8 +383,8 @@ if __name__ == "__main__":
     expt = 'tmox1016823'
     run = 6
 
-    run5 = xtc_set(run=run, experiment=expt, max_shots=5, plot=True)
-    run5.load_xtc(electron_roi=(4300, 20000), fix_waveform_baseline=False)
+    run5 = xtc_set(run=run, experiment=expt, max_shots=5)
+    run5.load_xtc(electron_roi=(4300, 20000), fix_waveform_baseline=False, plot=True)
     print("purge bad data -- might not need this anymore")
     run5.purge_bad_data()
     #if len(run5.time_px) % 4 == 0:
@@ -395,7 +395,7 @@ if __name__ == "__main__":
     #        run5.no_shots, -1, 4).mean(2)
     #    run5.time_px = run5.time_px[:-(len(run5.time_px) % 4)].reshape(-1, 4).mean(1)
     fig, ax = plt.subplots(1, 1, figsize=(12, 4), dpi=300)
-    ax.plot(run5.time_px, run5._waveform[0], label='Ion spectra', lw=2, c='maroon')
+    ax.plot(run5.time_px, run5._waveform.mean(0), label='Ion spectra', lw=2, c='maroon')
     ax.set(xlabel='TOF (μs)', yticks=[])
     plt.legend("mean TOF")
     plt.show()
