@@ -88,7 +88,7 @@ for r in runnums:
     for piranhaname in piranhanames[runkey]:
         print(piranhaname)
         if runpiranha: # this is redundant since piranhanames was made based off of detslist and piranhaname in detslist[runkey]:
-            piranhas[runkey][piranhaname] = {'detector': run.Detector(piranhaname), 'cls': Atm(400)}
+            piranhas[runkey][piranhaname] = {'detector': run.Detector(piranhaname), 'cls': Atm(200)}
         print(piranhas)
 
     eventnum: int = 0
@@ -98,6 +98,6 @@ for r in runnums:
         # run tests
         for i, pnames in enumerate(piranhas[runkey]):
             if (piranhas[runkey][pnames]['detector'] != None):
-                if (piranhas[runkey][pnames]['detector'].raw.raw(evt)[0] != None):
+                if (type(piranhas[runkey][pnames]['detector'].raw.raw(evt)) != None):
                     completeEvent += [piranhas[runkey][pnames]['cls'].test(piranhas[runkey][pnames]['detector'].raw.raw(evt))]
                     print(completeEvent)
