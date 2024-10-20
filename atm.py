@@ -1,5 +1,17 @@
 import numpy as np
 
+
+def getCentroid(data,pct=.8):
+    csum = np.cumsum(data.astype(float))
+    s = float(csum[-1])*pct
+    csum /= csum[-1]
+    inds = np.where((csum>(.5-pct/2.))*(csum<(.5+pct/2.)))
+    tmp = np.zeros(data.shape,dtype=float)
+    tmp[inds] = data[inds].astype(float)
+    num = np.sum(tmp*np.arange(data.shape[0],dtype=float))
+    return (num/s,np.uint64(s))
+
+
 class Atm:
     def __init__(self, thresh) -> None:
         self.values = []
@@ -55,7 +67,7 @@ class Atm:
         if type(atmwv)==type(None):
             return False
         try:
-            mean = np.int16(np.mean(atmwv[1800:])) # this subtracts baseline
+            mean = np.int16(np.mean(atmwv[800:])) # this subtracts baseline
         except:
             print('Damnit, atm!')
             return False
