@@ -36,13 +36,13 @@ def plot_hv_scan(hv_scan_xar):
     plt.show()
 
 if __name__ == "__main__":
-    fetch_shots = 100  # Number of shots to load
+    fetch_shots = None  # Number of shots to load
     update = 100  # Update progress after how many shots?
 
     expt = 'tmox1016823'
     run = 6
     #ports = [202, 247, 292, 270, 135, 180, 315, 90, 22, 225, 67, 45, 112, 157, 0, 337]
-    ports = [0, 90, 180, 270]
+    ports = [0]
 
     run6 = xtc_set(run=run, experiment=expt, max_shots=fetch_shots, scan=True)
 
@@ -60,11 +60,12 @@ if __name__ == "__main__":
         waveforms = run6._waveform  # Shape: (num_shots, num_tof_points)
         scan_vars = run6.scan_var   # Shape: (num_shots,)
         print(scan_vars)
+        print(len(scan_vars), np.unique(scan_vars))
 
         # Create a DataArray for waveforms with coordinates
         wf_da = xr.DataArray(
             waveforms,
-            coords={'shot': np.arange(waveforms.shape[1]), 'tof': tof_axis},
+            coords={'shot': np.arange(waveforms.shape[0]), 'tof': tof_axis},
             dims=['shot', 'tof']
         )
         # Add scan variable as a coordinate
