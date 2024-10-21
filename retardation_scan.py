@@ -26,12 +26,11 @@ if __name__ == "__main__":
         print(f"Processing port {p}")
         run6.load_xtc(electron_roi=(4300, 10000), fix_waveform_baseline=False, port_num=p, plot=False)
 
-        # Get the waveforms and scan variables
-        tof_axis = run6.time_px  # Time of flight axis
-        waveforms = run6._waveform  # Shape: (num_shots, num_tof_points)
-        scan_vars = run6.scan_var   # Shape: (num_shots,)
-        print(scan_vars)
-        print(len(scan_vars), np.unique(scan_vars))
+        # Extract data from run_dict
+        run_data = run6.run_dict[runs]
+        tof_axis = run_data['time']
+        scan_vars = run_data['scan_var']
+        waveforms = run_data['waveform']
 
         # Create a DataArray for waveforms with coordinates
         wf_da = xr.DataArray(

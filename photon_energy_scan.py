@@ -67,7 +67,7 @@ if __name__ == "__main__":
     update = 100  # Update progress after how many shots?
 
     expt = 'tmox1016823'
-    run = 6
+    run = [6]
     #ports = [202, 247, 292, 270, 135, 180, 315, 90, 22, 225, 67, 45, 112, 157, 0, 337]
     ports = [0]
 
