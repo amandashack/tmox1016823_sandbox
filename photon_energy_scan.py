@@ -63,7 +63,7 @@ def plot_hv_scan(hv_scan_xar, verify_data=False, num_verify=2):
 
 
 if __name__ == "__main__":
-    fetch_shots = None  # Number of shots to load
+    fetch_shots = 1000  # Number of shots to load
     update = 100  # Update progress after how many shots?
 
     expt = 'tmox1016823'
@@ -82,10 +82,11 @@ if __name__ == "__main__":
         print(f"Processing port {p}")
         run6.load_xtc(electron_roi=(4300, 10000), fix_waveform_baseline=False, port_num=p, plot=False)
 
-        # Get the waveforms and scan variables
-        tof_axis = run6.time_px  # Time of flight axis
-        waveforms = run6._waveform  # Shape: (num_shots, num_tof_points)
-        scan_vars = run6.scan_var   # Shape: (num_shots,)
+        # Extract data from run_dict
+        run_data = run6.run_dict[run]
+        tof_axis = run_data['time']
+        scan_vars = run_data['scan_var']
+        waveforms = run_data['waveform']
         print(scan_vars)
         print(len(scan_vars), np.unique(scan_vars))
 

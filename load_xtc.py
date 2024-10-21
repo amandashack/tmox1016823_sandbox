@@ -148,26 +148,35 @@ def fix_wf_baseline(hsd_in, bgfrom=500 * 64):
 
 class xtc_set:
     ### this is from Felix
-    def __init__(self, run, experiment, max_shots=None, scan=False):
-        self.run = run
+    def __init__(self, runs, experiment, max_shots=None, scan=False):
+        self.runs = runs
         self.experiment = experiment
         self.no_shots = max_shots
         self.scan = scan
         self.hsd_flag = False
 
     def load_xtc(self, electron_roi=(5000, 20000), fix_waveform_baseline=False, port_num=0, plot=False, downsample=3):
-        ds = ps.DataSource(exp=self.experiment, run=self.run)
+
         self.electron_roi = electron_roi
         self.fix_waveform_baseline = fix_waveform_baseline
-        _fzp, _step_arr, _xgmd, _gmd = [], [], [], []
-        waveform_arr = []
-        scan_var = []
-        Nfound = 0
-        Nbad = 0
+        run_dict = {}
 
-        for run in ds.runs():
+        for runnum in self.runs:
+            ds = ps.DataSource(exp=self.experiment, run=int(runnum))
+            run = next(ds.runs())
+            run_dict[runnum] = {}
+            _fzp, _step_arr, _xgmd, _gmd = [], [], [], []
+            waveform_arr = []
+            scan_var = []
+            Nfound = 0
+            Nbad = 0
+
             det_names = [name for name in run.detnames]
-            if 'mrco_hsd' in det_names: self.hsd_flag = True  # find if there is hsd data to parse
+            if 'mrco_hsd' in det_names:
+                self.hsd_flag = True  # find if there is hsd data to parse
+            else:
+                print("HSD detector not found!")
+                return None, None, None
             if 'gmd' in det_names:
                 gmd = run.Detector("gmd")
             else:
@@ -187,8 +196,13 @@ class xtc_set:
             if self.hsd_flag:
                 hsd = run.Detector('mrco_hsd')
 
-            for nevent, event in enumerate(run.events()):
-                if self.no_shots and nevent == self.no_shots: break  # kill loop after desired number of shots
+            i = 0
+            for event in run.events():
+                if Nfound >= self.no_shots:
+                    print('Reached max_shots limit.')
+                    break
+                if i % 100 == 0:
+                    print('working eventnum %i' % (i))
                 if gmd:
                     gmd_energy = gmd.raw.milliJoulesPerPulse(event)
                     if xgmd_energy is not None:
@@ -203,13 +217,23 @@ class xtc_set:
                     if fzp_im is not None:
                         _fzp.append(fzp_im)
 
+                # Get scan variable if scanning
+                if self.scan:
+                    sv = sv_detector(event)
+                    if sv is not None:
+                        scan_var.append(sv)
+                    else:
+                        scan_var.append(np.nan)
+                else:
+                    scan_var.append(np.nan)
+
                 if self.hsd_flag:
-                    #hsd_waveforms = hsd.raw.waveforms(event)
-                    hsd_waveforms = (hsd.raw.padded(event))
+                    hsd_waveforms = hsd.raw.padded(event)
                     if hsd_waveforms is None:
                         Nbad += 1
                     else:
-                        if nevent == 0:
+
+                        if Nfound == 0:
                             self.time_px = 1e6 * hsd_waveforms[port_num]['times'].astype('float')
                             #electron_roi_index = find_indices(self.time_px, self.electron_roi)
 
@@ -234,25 +258,24 @@ class xtc_set:
                                 axt.legend(lines1 + lines2, labels1 + labels2, facecolor='white', framealpha=1, fontsize=10)
                                 plt.show()
 
-                    waveform_arr.append(tof_waveform)
-                if self.scan:
-                    sv = sv_detector(event)
-                    scan_var.append(sv)
+                        waveform_arr.append(tof_waveform)
+                        Nfound += 1
 
-                Nfound += 1
-            break
+                i += 1
+            print(f"You ran {i} events for run {run}, and {Nfound} were good and {Nbad} were bad")
 
-        self.fzp = np.array(_fzp)
-        self.gmd = np.array(_gmd)
-        self.xgmd = np.array(_xgmd)
-        self.scan_var = np.array(scan_var)
-        self.no_shots = Nfound
+        run_dict[runnum]['fzp'] = np.array(_fzp)
+        run_dict[runnum]['gmd'] = np.array(_gmd)
+        run_dict[runnum]['xgmd'] = np.array(_xgmd)
+        run_dict[runnum]['scan_var'] = np.array(scan_var)
 
         if self.hsd_flag:
             # times in us
             print("Make the waveform please!")
             self.time_px = self.time_px[self.electron_roi[0]:self.electron_roi[1]]
+            run_dict[runnum]['time'] = np.array(self.time_px)
             self._waveform = np.array(waveform_arr)
+            run_dict[runnum]['waveform'] = np.array(self._waveform)
 
     """def scan_run(self):
         self.scan = True
